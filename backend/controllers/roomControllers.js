@@ -7,7 +7,7 @@ export const createRoom = async(req, res) => {
 
     try {
         const { roomType, pricePerNight, amenities } = req.body;
-        const hotel = await Hotel.findOne({ owner: req.auth.userId });
+        const hotel = await Hotel.findOne({ owner: req.auth().userId });
 
         if(!hotel)  return res.json({ success: false, message: "No Hotel found" });
 
@@ -36,31 +36,51 @@ export const createRoom = async(req, res) => {
 };
 
 
+// // API to get all rooms
+// export const getRooms = async(req, res) => {
+
+//     try {
+//         await Room.find({isAvailable: true}).populate({
+//             path: 'hotel',
+//             populate: {
+//                 path: 'owner',
+//                 select: 'image'
+//             }
+//         }).sort({ createdAt: -1 })
+//         res.json({ success: true, rooms });
+//     }
+//     catch(error) {
+//         res.json({ success: false, message: error.message });
+//     }
+
+// };
+
 // API to get all rooms
-export const getRooms = async(req, res) => {
+export const getRooms = async (req, res) => {
+  try {
+    const rooms = await Room.find({ isAvailable: true })
+      .populate({
+        path: "hotel",
+        populate: {
+          path: "owner",
+          select: "image",
+        },
+      })
+      .sort({ createdAt: -1 });
 
-    try {
-        await Room.find({isAvailable: true}).populate({
-            path: 'hotel',
-            populate: {
-                path: 'owner',
-                select: 'image'
-            }
-        }).sort({ createdAt: -1 })
-        res.json({ success: true, rooms });
-    }
-    catch(error) {
-        res.json({ success: false, message: error.message });
-    }
-
+    res.json({ success: true, rooms });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
 };
+
 
 
 // API to get all rooms for a specific hotel
 export const getOwnerRooms = async(req, res) => {
 
     try {
-        const hotelData = await Hotel({ owner: req.auth.userId });
+        const hotelData = await Hotel.findOne({ owner: req.auth().userId });
         const rooms = await Room.find({ hotel: hotelData._id.toString() }).populate("hotel");
 
         res.json({ success: true, rooms });

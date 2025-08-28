@@ -56,7 +56,7 @@ export const createBooking = async(req, res) => {
 
         // Get totalPrice For Room
         const roomData = await Room.findById(room).populate("hotel");
-        let totalPrice = roomData.pircePerNight;
+        let totalPrice = roomData.pricePerNight;
 
         // Calculate totalPrice based on nights
         const checkIn = new Date(checkInDate);
@@ -90,7 +90,7 @@ export const createBooking = async(req, res) => {
 export const getUserBookings = async(req, res) => {
 
     try {
-        const user = req.body._id;
+        const user = req.user._id;
         const bookings = await Booking.find({ user }).populate("room hotel").sort({ createdAt: -1 });
         res.json({ success: true, bookings });
     }
